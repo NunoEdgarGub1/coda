@@ -169,6 +169,13 @@ let daemon logger =
            "/ip4/IPADDR/tcp/PORT/ipfs/PEERID initial \"bootstrap\" peers for \
             libp2p discovery"
          (listed string)
+     and curr_fork_id =
+       flag "current-fork-id" (listed string)
+         ~doc:
+           (sprintf
+              "HEX-STRING (%d characters) Current fork ID for this node, only \
+               blocks with the same ID accepted"
+              Fork_id.required_length)
      in
      fun () ->
        let open Deferred.Let_syntax in
@@ -575,6 +582,7 @@ let daemon logger =
          let initial_block_production_keypairs =
            block_production_keypair |> Option.to_list |> Keypair.Set.of_list
          in
+         External_transition.set_current_fork_id (Fork_id.create curr_fork_id) ;
          let consensus_local_state =
            Consensus.Data.Local_state.create ~genesis_ledger
              ( Option.map block_production_keypair ~f:(fun keypair ->
